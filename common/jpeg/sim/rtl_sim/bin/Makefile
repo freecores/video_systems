@@ -1,6 +1,6 @@
 ##########################################################################
 #                                                                        #
-# JPEG codec Testsuite                                                   #
+# JPEG Huffman codec Testsuite                                           #
 # (C) 2002 Richard Herveille   richard@asics.ws                          #
 #                                                                        #
 # v.01                                                                   #
@@ -16,26 +16,10 @@ MS="-s"
 # DUT Sources
 #
 ##########################################################################
-JPEG_SRC_DIR=	../../../rtl/verilog
-DCT_SRC_DIR=	../../../../dct/rtl/verilog
-QNR_SRC_DIR=	../../../../qnr/rtl/verilog
-RLE_SRC_DIR=	../../../../run_length_coding/rtl/verilog
+DUT_SRC_DIR=../../../rtl/verilog
 
-_TARGETS_=	$(JPEG_SRC_DIR)/jpeg_encoder.v	\
-		$(DCT_SRC_DIR)/dct_mac.v	\
-		$(DCT_SRC_DIR)/dct_syn.v	\
-		$(DCT_SRC_DIR)/dctub.v		\
-		$(DCT_SRC_DIR)/dctu.v		\
-		$(DCT_SRC_DIR)/dct.v		\
-		$(DCT_SRC_DIR)/zigzag.v		\
-		$(DCT_SRC_DIR)/fdct.v		\
-		$(QNR_SRC_DIR)/div_su.v		\
-		$(QNR_SRC_DIR)/div_uu.v		\
-		$(QNR_SRC_DIR)/jpeg_qnr.v	\
-		$(RLE_SRC_DIR)/jpeg_rle1.v	\
-		$(RLE_SRC_DIR)/jpeg_rzs.v	\
-		$(RLE_SRC_DIR)/jpeg_rle.v
-
+_TARGETS_=	$(DUT_SRC_DIR)/huffman_enc.v		\
+		$(DUT_SRC_DIR)/huffman_dec.v
 
 
 ##########################################################################
@@ -45,7 +29,10 @@ _TARGETS_=	$(JPEG_SRC_DIR)/jpeg_encoder.v	\
 ##########################################################################
 _TOP_=bench_top
 TB_SRC_DIR=../../../bench/verilog
-_TB_=		$(TB_SRC_DIR)/bench_top.v
+_TB_=		$(TB_SRC_DIR)/bench_top.v		\
+		$(TB_SRC_DIR)/generic_dpram.v		\
+		$(TB_SRC_DIR)/lfsr.v			\
+		$(TB_SRC_DIR)/generic_fifo_lfsr.v	\
 
 ##########################################################################
 #
@@ -53,8 +40,7 @@ _TB_=		$(TB_SRC_DIR)/bench_top.v
 #
 ##########################################################################
 
-INCDIR="-INCDIR ./$(TB_SRC_DIR)/ -INCDIR ./$(JPEG_SRC_DIR)/ -INCDIR ./$(DCT_SRC_DIR)/ \
-        -INCDIR ./$(QNR_SRC_DIR)/ -INCDIR ./$(RLE_SRC_DIR)/"
+INCDIR=-INCDIR ./$(TB_SRC_DIR)/ -INCDIR ./$(DUT_SRC_DIR)/
 LOGF=-LOGFILE .nclog
 NCCOMMON=-CDSLIB ncwork/cds.lib -HDLVAR ncwork/hdl.var -NOCOPYRIGHT
 
@@ -75,7 +61,7 @@ sim:
 	@$(MAKE) $(MS) vlog				\
 		TARGETS="$(_TARGETS_)"			\
 		TB="$(_TB_)"				\
-		INCDIR=$(INCDIR)			\
+		INCDIR="$(INCDIR)"			\
 		WAVES="$(WAVES)"
 	@echo ""
 	@echo "----- Running NCELAB ... ----------"
