@@ -7,9 +7,6 @@
 ////          www.asics.ws                                       ////
 ////                                                             ////
 ////  Synthesis results:                                         ////
-////  Device: Altera EP20K400EBC652-1x, 50MHz clk area optimized ////
-////  12bit coeff.: 15957lcells(96%), 17440membits(8%), 76MHz    ////                                                          ////
-////  11bit coeff.: 15327lcells(92%), 15456membits(7%), 76MHz    ////
 ////                                                             ////
 ////                                                             ////
 ////                                                             ////
@@ -41,16 +38,22 @@
 
 //  CVS Log
 //
-//  $Id: dct_syn.v,v 1.2 2002-10-23 09:06:59 rherveille Exp $
+//  $Id: dct_syn.v,v 1.3 2002-10-31 12:50:03 rherveille Exp $
 //
-//  $Date: 2002-10-23 09:06:59 $
-//  $Revision: 1.2 $
+//  $Date: 2002-10-31 12:50:03 $
+//  $Revision: 1.3 $
 //  $Author: rherveille $
 //  $Locker:  $
 //  $State: Exp $
 //
 // Change History:
 //               $Log: not supported by cvs2svn $
+//               Revision 1.2  2002/10/23 09:06:59  rherveille
+//               Improved many files.
+//               Fixed some bugs in Run-Length-Encoder.
+//               Removed dependency on ud_cnt and ro_cnt.
+//               Started (Motion)JPEG hardware encoder project.
+//
 //
 
 // synopsys translate_off
@@ -79,7 +82,7 @@ module dct_syn(clk, ena, rst, dstrb, din, dout, den);
 	//              = 12(13bit resolution)
 	//              = 26(12bit resolution)
 	//              = 54(11bit resolution)
-	fdct #(9) dut (
+	fdct #(13) dut (
 		.clk(clk),
 		.ena(1'b1),
 		.rst(rst),

@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////
 ////                                                             ////
-////  Non-restoring unsinged dividor                             ////
+////  Non-restoring unsinged divider                             ////
 ////                                                             ////
 ////  Author: Richard Herveille                                  ////
 ////          richard@asics.ws                                   ////
@@ -34,16 +34,22 @@
 
 //  CVS Log
 //
-//  $Id: div_uu.v,v 1.2 2002-10-23 09:07:03 rherveille Exp $
+//  $Id: div_uu.v,v 1.3 2002-10-31 12:52:55 rherveille Exp $
 //
-//  $Date: 2002-10-23 09:07:03 $
-//  $Revision: 1.2 $
+//  $Date: 2002-10-31 12:52:55 $
+//  $Revision: 1.3 $
 //  $Author: rherveille $
 //  $Locker:  $
 //  $State: Exp $
 //
 // Change History:
 //               $Log: not supported by cvs2svn $
+//               Revision 1.2  2002/10/23 09:07:03  rherveille
+//               Improved many files.
+//               Fixed some bugs in Run-Length-Encoder.
+//               Removed dependency on ud_cnt and ro_cnt.
+//               Started (Motion)JPEG hardware encoder project.
+//
 
 //synopsys translate_off
 `include "timescale.v"
@@ -113,7 +119,7 @@ module div_uu(clk, ena, z, d, q, s, div0, ovf);
 	//
 	// variables
 	//
-	reg [d_width -1:0] q_pipe  [d_width:0];
+	reg [d_width-1:0] q_pipe  [d_width-1:0];
 	reg [z_width:0] s_pipe  [d_width:0];
 	reg [z_width:0] d_pipe  [d_width:0];
 
@@ -150,6 +156,9 @@ module div_uu(clk, ena, z, d, q, s, div0, ovf);
 	       s_pipe[n1] <= #1 gen_s(s_pipe[n1-1], d_pipe[n1-1]);
 
 	// generate quotient pipe
+	always @(posedge clk)
+	  q_pipe[0] <= #1 0;
+
 	always @(posedge clk)
 	  if(ena)
 	    for(n2=1; n2 < d_width; n2=n2+1)

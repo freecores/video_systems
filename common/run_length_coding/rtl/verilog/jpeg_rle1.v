@@ -39,16 +39,19 @@
 
 //  CVS Log
 //
-//  $Id: jpeg_rle1.v,v 1.3 2002-10-23 18:58:54 rherveille Exp $
+//  $Id: jpeg_rle1.v,v 1.4 2002-10-31 12:53:39 rherveille Exp $
 //
-//  $Date: 2002-10-23 18:58:54 $
-//  $Revision: 1.3 $
+//  $Date: 2002-10-31 12:53:39 $
+//  $Revision: 1.4 $
 //  $Author: rherveille $
 //  $Locker:  $
 //  $State: Exp $
 //
 // Change History:
 //               $Log: not supported by cvs2svn $
+//               Revision 1.3  2002/10/23 18:58:54  rherveille
+//               Fixed a bug in the zero-run (run-length-coder)
+//
 //               Revision 1.2  2002/10/23 09:07:04  rherveille
 //               Improved many files.
 //               Fixed some bugs in Run-Length-Encoder.
@@ -56,7 +59,9 @@
 //               Started (Motion)JPEG hardware encoder project.
 //
 
-`timescale 1ns/10ps
+//synopsys translate_off
+`include "timescale.v"
+//synopsys translate_on
 
 module jpeg_rle1(clk, rst, ena, go, din, rlen, size, amp, den, dcterm);
 
@@ -67,14 +72,14 @@ module jpeg_rle1(clk, rst, ena, go, din, rlen, size, amp, den, dcterm);
 	//
 	// inputs & outputs
 	//
-	input clk;            // system clock
-	input rst;            // asynchronous reset
-	input ena;            // clock enable
+	input         clk;    // system clock
+	input         rst;    // asynchronous reset
+	input         ena;    // clock enable
 	input         go;
 	input  [11:0] din;    // data input
 
 	output [ 3:0] rlen;   // run-length
-	output [ 3:0] size;   // size
+	output [ 3:0] size;   // size (or category)
 	output [11:0] amp;    // amplitude
 	output        den;    // data output enable
 	output        dcterm; // DC-term (start of new block)
@@ -91,8 +96,6 @@ module jpeg_rle1(clk, rst, ena, go, din, rlen, size, amp, den, dcterm);
 	reg [3:0] zero_cnt;
 	wire      is_zero;
 
-	wire [3:0] sizeof_din;
-
 	reg       state;
 	parameter dc = 1'b0;
 	parameter ac = 1'b1;
@@ -101,7 +104,11 @@ module jpeg_rle1(clk, rst, ena, go, din, rlen, size, amp, den, dcterm);
 	// module body
 	//
 
+	//
 	// function declarations
+	//
+	
+	// Function abs; absolute value
 	function [10:0] abs;
 	  input [11:0] a;
 	begin
@@ -112,41 +119,72 @@ module jpeg_rle1(clk, rst, ena, go, din, rlen, size, amp, den, dcterm);
 	end
 	endfunction
 
-	function [3:0] sizef;
+	// Function cat, calculates category for Din
+	function [3:0] cat;
 	  input [11:0] a;
 	  reg   [10:0] tmp;
 	begin
-	  // get absolute value
-	  tmp = abs(a);
+	    // get absolute value
+	    tmp = abs(a);
 
-	  // determine size
-	  casex (tmp) // synopsys full_case parallel_case
-	      11'b1??_????_???? : sizef = 4'hb; // 1024..2047
-	      11'b01?_????_???? : sizef = 4'ha; //  512..1023
-	      11'b001_????_???? : sizef = 4'h9; //  256.. 511
-	      11'b000_1???_???? : sizef = 4'h8; //  128.. 255
-	      11'b000_01??_???? : sizef = 4'h7; //   64.. 127
-	      11'b000_001?_???? : sizef = 4'h6; //   32..  63
-	      11'b000_0001_???? : sizef = 4'h5; //   16..  31
-	      11'b000_0000_1??? : sizef = 4'h4; //    8..  15
-	      11'b000_0000_01?? : sizef = 4'h3; //    4..   7
-	      11'b000_0000_001? : sizef = 4'h2; //    2..   3
-	      11'b000_0000_0001 : sizef = 4'h1; //    1
-	      default           : sizef = 4'h0; //    0 (DC only)
-	  endcase
+	    // determine category
+	    casex(tmp) // synopsys full_case parallel_case
+	      11'b1??_????_???? : cat = 4'hb; // 1024..2047
+	      11'b01?_????_???? : cat = 4'ha; //  512..1023
+	      11'b001_????_???? : cat = 4'h9; //  256.. 511
+	      11'b000_1???_???? : cat = 4'h8; //  128.. 255
+	      11'b000_01??_???? : cat = 4'h7; //   64.. 127
+	      11'b000_001?_???? : cat = 4'h6; //   32..  63
+	      11'b000_0001_???? : cat = 4'h5; //   16..  31
+	      11'b000_0000_1??? : cat = 4'h4; //    8..  15
+	      11'b000_0000_01?? : cat = 4'h3; //    4..   7
+	      11'b000_0000_001? : cat = 4'h2; //    2..   3
+	      11'b000_0000_0001 : cat = 4'h1; //    1
+	      11'b000_0000_0000 : cat = 4'h0; //    0 (DC only)
+	    endcase
+	end
+	endfunction
+
+
+	// Function modamp, calculate additional bits per category
+	function [10:0] rem;
+	  input [11:0] a;
+	  reg   [10:0] tmp, tmp_rem;
+	begin
+	    tmp_rem = a[11] ? (a[10:0] - 10'h1) : a[10:0];
+
+	    if(0)
+	    begin
+	      // get absolute value
+	      tmp = abs(a);
+
+	      casex(tmp) // synopsys full_case parallel_case
+	        11'b1??_????_???? : rem = tmp_rem & 11'b111_1111_1111;
+	        11'b01?_????_???? : rem = tmp_rem & 11'b011_1111_1111;
+	        11'b001_????_???? : rem = tmp_rem & 11'b001_1111_1111;
+	        11'b000_1???_???? : rem = tmp_rem & 11'b000_1111_1111;
+	        11'b000_01??_???? : rem = tmp_rem & 11'b000_0111_1111;
+	        11'b000_001?_???? : rem = tmp_rem & 11'b000_0011_1111;
+	        11'b000_0001_???? : rem = tmp_rem & 11'b000_0001_1111;
+	        11'b000_0000_1??? : rem = tmp_rem & 11'b000_0000_1111;
+	        11'b000_0000_01?? : rem = tmp_rem & 11'b000_0000_0111;
+	        11'b000_0000_001? : rem = tmp_rem & 11'b000_0000_0011;
+	        11'b000_0000_0001 : rem = tmp_rem & 11'b000_0000_0001;
+	        11'b000_0000_0000 : rem = tmp_rem & 11'b000_0000_0000;
+	      endcase
+	    end
+	    else
+	      rem = tmp_rem;
 	end
 	endfunction
 
 	// detect zero
 	assign is_zero = ~|din;
 
-	// hookup sizef function
-	assign sizeof_din = sizef(din);
-
 	// assign dout
 	always @(posedge clk)
 	  if (ena)
-	      amp <= #1 din;
+	      amp <= #1 rem(din);
 
 	// generate sample counter
 	always @(posedge clk)
@@ -177,24 +215,23 @@ module jpeg_rle1(clk, rst, ena, go, din, rlen, size, amp, den, dcterm);
 	  else if (ena)
 	    case (state) // synopsys full_case parallel_case
 	      dc:
-	        if(go)
-	          begin
-	              state  <= #1 ac;
+	        begin
+	            rlen <= #1 0;
+	            size <= #1 cat(din);
 
-	              rlen   <= #1 0;
-	              size   <= #1 sizeof_din;
-	              den    <= #1 1'b1;
-	              dcterm <= #1 1'b1;
-	          end
-	        else
-	          begin
-	              state  <= #1 dc;
-
-	              rlen   <= #1 0;
-	              size   <= #1 0;
-	              den    <= #1 1'b0;
-	              dcterm <= #1 1'b0;
-	          end
+	            if(go)
+	              begin
+	                  state  <= #1 ac;
+	                  den    <= #1 1'b1;
+	                  dcterm <= #1 1'b1;
+	              end
+	            else
+	              begin
+	                  state  <= #1 dc;
+	                  den    <= #1 1'b0;
+	                  dcterm <= #1 1'b0;
+	              end
+	        end
 
 	      ac:
 	        if(&sample_cnt)   // finished current block
@@ -211,38 +248,27 @@ module jpeg_rle1(clk, rst, ena, go, din, rlen, size, amp, den, dcterm);
 	               else
 	                  begin
 	                      rlen <= #1 zero_cnt;
-	                      size <= #1 sizeof_din;
+	                      size <= #1 cat(din);
 	                      den  <= #1 1'b1;
 	                      dcterm <= #1 1'b0;
 	                  end
 	           end
 	        else
 	           begin
-	               state <= #1 ac;
+	               state  <= #1 ac;
+
+	               rlen   <= #1 zero_cnt;
+	               dcterm <= #1 1'b0;
 
 	               if (is_zero)
 	                  begin
-	                      if (&zero_cnt)
-	                          begin
-	                              rlen <= #1 zero_cnt;
-	                              size <= #1 0;
-	                              den  <= #1 1'b1;
-	                              dcterm <= #1 1'b0;
-	                          end
-	                      else
-	                          begin
-	                              rlen <= #1 zero_cnt;
-	                              size <= #1 0;
-	                              den  <= #1 1'b0;
-	                              dcterm <= #1 1'b0;
-	                          end
+	                      size   <= #1 0;
+	                      den    <= #1 &zero_cnt;
 	                  end
 	               else
 	                  begin
-	                      rlen <= #1 zero_cnt;
-	                      size <= #1 sizeof_din;
+	                      size <= #1 cat(din);
 	                      den  <= #1 1'b1;
-	                      dcterm <= #1 1'b0;
 	                  end
 	           end
 	    endcase

@@ -37,16 +37,19 @@
 
 //  CVS Log
 //
-//  $Id: jpeg_rzs.v,v 1.3 2002-10-23 18:58:54 rherveille Exp $
+//  $Id: jpeg_rzs.v,v 1.4 2002-10-31 12:53:39 rherveille Exp $
 //
-//  $Date: 2002-10-23 18:58:54 $
-//  $Revision: 1.3 $
+//  $Date: 2002-10-31 12:53:39 $
+//  $Revision: 1.4 $
 //  $Author: rherveille $
 //  $Locker:  $
 //  $State: Exp $
 //
 // Change History:
 //               $Log: not supported by cvs2svn $
+//               Revision 1.3  2002/10/23 18:58:54  rherveille
+//               Fixed a bug in the zero-run (run-length-coder)
+//
 //               Revision 1.2  2002/10/23 09:07:04  rherveille
 //               Improved many files.
 //               Fixed some bugs in Run-Length-Encoder.
@@ -54,14 +57,17 @@
 //               Started (Motion)JPEG hardware encoder project.
 //
 
-`timescale 1ns/10ps
+//synopsys translate_off
+`include "timescale.v"
+//synopsys translate_on
 
-module jpeg_rzs(clk, rst, deni, dci, rleni, sizei, ampi, deno, dco, rleno, sizeo, ampo);
+module jpeg_rzs(clk, ena, rst, deni, dci, rleni, sizei, ampi, deno, dco, rleno, sizeo, ampo);
 
 	//
 	// inputs & outputs
 	//
 	input        clk;
+	input        ena;
 	input        rst;
 	input        deni;
 	input        dci;

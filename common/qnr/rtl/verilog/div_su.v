@@ -35,16 +35,22 @@
 
 //  CVS Log
 //
-//  $Id: div_su.v,v 1.2 2002-10-23 09:07:03 rherveille Exp $
+//  $Id: div_su.v,v 1.3 2002-10-31 12:52:54 rherveille Exp $
 //
-//  $Date: 2002-10-23 09:07:03 $
-//  $Revision: 1.2 $
+//  $Date: 2002-10-31 12:52:54 $
+//  $Revision: 1.3 $
 //  $Author: rherveille $
 //  $Locker:  $
 //  $State: Exp $
 //
 // Change History:
 //               $Log: not supported by cvs2svn $
+//               Revision 1.2  2002/10/23 09:07:03  rherveille
+//               Improved many files.
+//               Fixed some bugs in Run-Length-Encoder.
+//               Removed dependency on ud_cnt and ro_cnt.
+//               Started (Motion)JPEG hardware encoder project.
+//
 
 //synopsys translate_off
 `include "timescale.v"
@@ -61,18 +67,19 @@ module div_su(clk, ena, z, d, q, s, div0, ovf);
 	//
 	// inputs & outputs
 	//
-	input clk;               // system clock
-	input ena;               // clock enable
+	input clk;              // system clock
+	input ena;              // clock enable
 
-	input  [z_width -1:0] z; // divident
-	input  [d_width -1:0] d; // divisor
-	output [d_width   :0] q; // quotient
-	reg [d_width :0] q;
-	output [d_width -1:0] s; // remainder
-	reg [d_width :0] s;
+	input  [z_width-1:0] z; // divident
+	input  [d_width-1:0] d; // divisor
+	output [d_width  :0] q; // quotient
+	output [d_width-1:0] s; // remainder
 	output div0;
-	reg div0;
 	output ovf;
+
+	reg [d_width :0] q;
+	reg [d_width-1:0] s;
+	reg div0;
 	reg ovf;
 
 	//

@@ -34,18 +34,26 @@
 
 //  CVS Log
 //
-//  $Id: jpeg_qnr.v,v 1.2 2002-10-23 09:07:03 rherveille Exp $
+//  $Id: jpeg_qnr.v,v 1.3 2002-10-31 12:52:55 rherveille Exp $
 //
-//  $Date: 2002-10-23 09:07:03 $
-//  $Revision: 1.2 $
+//  $Date: 2002-10-31 12:52:55 $
+//  $Revision: 1.3 $
 //  $Author: rherveille $
 //  $Locker:  $
 //  $State: Exp $
 //
 // Change History:
 //               $Log: not supported by cvs2svn $
+//               Revision 1.2  2002/10/23 09:07:03  rherveille
+//               Improved many files.
+//               Fixed some bugs in Run-Length-Encoder.
+//               Removed dependency on ud_cnt and ro_cnt.
+//               Started (Motion)JPEG hardware encoder project.
+//
 
-`timescale 1ns/10ps
+//synopsys translate_off
+`include "timescale.v"
+//synopsys translate_on
 
 module jpeg_qnr(clk, ena, rst, dstrb, din, qnt_val, qnt_cnt, dout, douten);
 

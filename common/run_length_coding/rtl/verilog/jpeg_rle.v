@@ -38,16 +38,19 @@
 
 //  CVS Log
 //
-//  $Id: jpeg_rle.v,v 1.3 2002-10-23 18:58:54 rherveille Exp $
+//  $Id: jpeg_rle.v,v 1.4 2002-10-31 12:53:39 rherveille Exp $
 //
-//  $Date: 2002-10-23 18:58:54 $
-//  $Revision: 1.3 $
+//  $Date: 2002-10-31 12:53:39 $
+//  $Revision: 1.4 $
 //  $Author: rherveille $
 //  $Locker:  $
 //  $State: Exp $
 //
 // Change History:
 //               $Log: not supported by cvs2svn $
+//               Revision 1.3  2002/10/23 18:58:54  rherveille
+//               Fixed a bug in the zero-run (run-length-coder)
+//
 //               Revision 1.2  2002/10/23 09:07:04  rherveille
 //               Improved many files.
 //               Fixed some bugs in Run-Length-Encoder.
@@ -55,7 +58,9 @@
 //               Started (Motion)JPEG hardware encoder project.
 //
 
-`timescale 1ns/10ps
+//synopsys translate_off
+`include "timescale.v"
+//synopsys translate_on
 
 module jpeg_rle(clk, rst, ena, dstrb, din, size, rlen, amp, douten, bstart);
 
@@ -117,6 +122,7 @@ module jpeg_rle(clk, rst, ena, dstrb, din, size, rlen, amp, douten, bstart);
 	jpeg_rzs rz1(
 		.clk(clk),
 		.rst(rst),
+		.ena(ena),
 		.rleni(rle_rlen),
 		.sizei(rle_size),
 		.ampi(rle_amp),
@@ -133,6 +139,7 @@ module jpeg_rle(clk, rst, ena, dstrb, din, size, rlen, amp, douten, bstart);
 	jpeg_rzs rz2(
 		.clk(clk),
 		.rst(rst),
+		.ena(ena),
 		.rleni(rz1_rlen),
 		.sizei(rz1_size),
 		.ampi(rz1_amp),
@@ -149,6 +156,7 @@ module jpeg_rle(clk, rst, ena, dstrb, din, size, rlen, amp, douten, bstart);
 	jpeg_rzs rz3(
 		.clk(clk),
 		.rst(rst),
+		.ena(ena),
 		.rleni(rz2_rlen),
 		.sizei(rz2_size),
 		.ampi(rz2_amp),
@@ -165,6 +173,7 @@ module jpeg_rle(clk, rst, ena, dstrb, din, size, rlen, amp, douten, bstart);
 	jpeg_rzs rz4(
 		.clk(clk),
 		.rst(rst),
+		.ena(ena),
 		.rleni(rz3_rlen),
 		.sizei(rz3_size),
 		.ampi(rz3_amp),

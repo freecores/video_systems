@@ -34,16 +34,19 @@
 
 //  CVS Log
 //
-//  $Id: jpeg_encoder.v,v 1.2 2002-10-23 18:58:51 rherveille Exp $
+//  $Id: jpeg_encoder.v,v 1.3 2002-10-31 12:51:44 rherveille Exp $
 //
-//  $Date: 2002-10-23 18:58:51 $
-//  $Revision: 1.2 $
+//  $Date: 2002-10-31 12:51:44 $
+//  $Revision: 1.3 $
 //  $Author: rherveille $
 //  $Locker:  $
 //  $State: Exp $
 //
 // Change History:
 //               $Log: not supported by cvs2svn $
+//               Revision 1.2  2002/10/23 18:58:51  rherveille
+//               Fixed a bug in the zero-run (run-length-coder)
+//
 //               Revision 1.1  2002/10/23 09:07:01  rherveille
 //               Improved many files.
 //               Fixed some bugs in Run-Length-Encoder.
@@ -51,8 +54,9 @@
 //               Started (Motion)JPEG hardware encoder project.
 //
 
-
+//synopsys translate_off
 `include "timescale.v"
+//synopsys translate_on
 
 module jpeg_encoder(
 	clk,
