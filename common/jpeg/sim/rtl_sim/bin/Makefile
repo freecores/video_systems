@@ -19,7 +19,7 @@ MS="-s"
 JPEG_SRC_DIR=	../../../rtl/verilog
 DCT_SRC_DIR=	../../../../dct/rtl/verilog
 QNR_SRC_DIR=	../../../../qnr/rtl/verilog
-RLE_SRC_DIR=	../../../../run_length_enc/rtl/verilog
+RLE_SRC_DIR=	../../../../run_length_coding/rtl/verilog
 
 _TARGETS_=	$(JPEG_SRC_DIR)/jpeg_encoder.v	\
 		$(DCT_SRC_DIR)/dct_mac.v	\
