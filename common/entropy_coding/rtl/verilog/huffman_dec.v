@@ -38,16 +38,18 @@
 
 //  CVS Log
 //
-//  $Id: huffman_dec.v,v 1.1 2002-10-29 20:07:53 rherveille Exp $
+//  $Id: huffman_dec.v,v 1.2 2002-10-31 12:50:40 rherveille Exp $
 //
-//  $Date: 2002-10-29 20:07:53 $
-//  $Revision: 1.1 $
+//  $Date: 2002-10-31 12:50:40 $
+//  $Revision: 1.2 $
 //  $Author: rherveille $
 //  $Locker:  $
 //  $State: Exp $
 //
 
+// synopsys translate_off
 `include "timescale.v"
+// synopsys translate_on
 
 module huffman_dec(clk, rst, tablesel, di, die, do, doe, busy);
   input         clk;      // clock
@@ -125,6 +127,7 @@ module huffman_dec(clk, rst, tablesel, di, die, do, doe, busy);
           sreg  <= #1 24'h0;
           cnt   <= #1 5'h0;
           busy  <= #1 1'b0;
+		  doe   <= #1 1'b0;
       end
     else
       begin
