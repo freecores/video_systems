@@ -38,20 +38,26 @@
 
 //  CVS Log
 //
-//  $Id: jpeg_rle.v,v 1.2 2002-10-23 09:07:04 rherveille Exp $
+//  $Id: jpeg_rle.v,v 1.3 2002-10-23 18:58:54 rherveille Exp $
 //
-//  $Date: 2002-10-23 09:07:04 $
-//  $Revision: 1.2 $
+//  $Date: 2002-10-23 18:58:54 $
+//  $Revision: 1.3 $
 //  $Author: rherveille $
 //  $Locker:  $
 //  $State: Exp $
 //
 // Change History:
 //               $Log: not supported by cvs2svn $
+//               Revision 1.2  2002/10/23 09:07:04  rherveille
+//               Improved many files.
+//               Fixed some bugs in Run-Length-Encoder.
+//               Removed dependency on ud_cnt and ro_cnt.
+//               Started (Motion)JPEG hardware encoder project.
+//
 
 `timescale 1ns/10ps
 
-module jpeg_rle(clk, rst, ena, dstrb, din, size, rlen, amp, douten);
+module jpeg_rle(clk, rst, ena, dstrb, din, size, rlen, amp, douten, bstart);
 
 	//
 	// parameters
@@ -70,6 +76,7 @@ module jpeg_rle(clk, rst, ena, dstrb, din, size, rlen, amp, douten);
 	output [ 3:0] rlen;    // run-length
 	output [11:0] amp;     // amplitude
 	output        douten;  // data output enable
+	output        bstart;  // block start
 
 	//
 	// variables
@@ -79,22 +86,28 @@ module jpeg_rle(clk, rst, ena, dstrb, din, size, rlen, amp, douten);
 	wire [ 3:0] rle_size, rz1_size, rz2_size, rz3_size, rz4_size;
 	wire [11:0] rle_amp,  rz1_amp,  rz2_amp,  rz3_amp,  rz4_amp;
 	wire        rle_den,  rz1_den,  rz2_den,  rz3_den,  rz4_den;
+	wire        rle_dc,   rz1_dc,   rz2_dc,   rz3_dc,   rz4_dc;
 
 	//
 	// module body
 	//
+
+	reg ddstrb;
+	always @(posedge clk)
+	  ddstrb <= #1 dstrb;
 
 	// generate run-length encoded signals
 	jpeg_rle1 rle(
 		.clk(clk),
 		.rst(rst),
 		.ena(ena),
-		.go(dstrb),
+		.go(ddstrb),
 		.din(din),
 		.rlen(rle_rlen),
 		.size(rle_size),
 		.amp(rle_amp),
-		.den(rle_den)
+		.den(rle_den),
+		.dcterm(rle_dc)
 	);
 
 	// Find (15,0) (0,0) sequences and replace by (0,0)
@@ -108,10 +121,12 @@ module jpeg_rle(clk, rst, ena, dstrb, din, size, rlen, amp, douten);
 		.sizei(rle_size),
 		.ampi(rle_amp),
 		.deni(rle_den),
+		.dci(rle_dc),
 		.rleno(rz1_rlen),
 		.sizeo(rz1_size),
 		.ampo(rz1_amp),
-		.deno(rz1_den)
+		.deno(rz1_den),
+		.dco(rz1_dc)
 	);
 
 	// step2
@@ -122,10 +137,12 @@ module jpeg_rle(clk, rst, ena, dstrb, din, size, rlen, amp, douten);
 		.sizei(rz1_size),
 		.ampi(rz1_amp),
 		.deni(rz1_den),
+		.dci(rz1_dc),
 		.rleno(rz2_rlen),
 		.sizeo(rz2_size),
 		.ampo(rz2_amp),
-		.deno(rz2_den)
+		.deno(rz2_den),
+		.dco(rz2_dc)
 	);
 
 	// step3
@@ -136,10 +153,12 @@ module jpeg_rle(clk, rst, ena, dstrb, din, size, rlen, amp, douten);
 		.sizei(rz2_size),
 		.ampi(rz2_amp),
 		.deni(rz2_den),
+		.dci(rz2_dc),
 		.rleno(rz3_rlen),
 		.sizeo(rz3_size),
 		.ampo(rz3_amp),
-		.deno(rz3_den)
+		.deno(rz3_den),
+		.dco(rz3_dc)
 	);
 
 	// step4
@@ -150,10 +169,12 @@ module jpeg_rle(clk, rst, ena, dstrb, din, size, rlen, amp, douten);
 		.sizei(rz3_size),
 		.ampi(rz3_amp),
 		.deni(rz3_den),
+		.dci(rz3_dc),
 		.rleno(rz4_rlen),
 		.sizeo(rz4_size),
 		.ampo(rz4_amp),
-		.deno(rz4_den)
+		.deno(rz4_den),
+		.dco(rz4_dc)
 	);
 
 
@@ -162,4 +183,5 @@ module jpeg_rle(clk, rst, ena, dstrb, din, size, rlen, amp, douten);
 	assign size   = rz4_size;
 	assign amp    = rz4_amp;
 	assign douten = rz4_den;
+	assign bstart = rz4_dc;
 endmodule

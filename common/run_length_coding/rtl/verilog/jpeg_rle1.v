@@ -39,20 +39,26 @@
 
 //  CVS Log
 //
-//  $Id: jpeg_rle1.v,v 1.2 2002-10-23 09:07:04 rherveille Exp $
+//  $Id: jpeg_rle1.v,v 1.3 2002-10-23 18:58:54 rherveille Exp $
 //
-//  $Date: 2002-10-23 09:07:04 $
-//  $Revision: 1.2 $
+//  $Date: 2002-10-23 18:58:54 $
+//  $Revision: 1.3 $
 //  $Author: rherveille $
 //  $Locker:  $
 //  $State: Exp $
 //
 // Change History:
 //               $Log: not supported by cvs2svn $
+//               Revision 1.2  2002/10/23 09:07:04  rherveille
+//               Improved many files.
+//               Fixed some bugs in Run-Length-Encoder.
+//               Removed dependency on ud_cnt and ro_cnt.
+//               Started (Motion)JPEG hardware encoder project.
+//
 
 `timescale 1ns/10ps
 
-module jpeg_rle1(clk, rst, ena, go, din, rlen, size, amp, den);
+module jpeg_rle1(clk, rst, ena, go, din, rlen, size, amp, den, dcterm);
 
 	//
 	// parameters
@@ -61,20 +67,21 @@ module jpeg_rle1(clk, rst, ena, go, din, rlen, size, amp, den);
 	//
 	// inputs & outputs
 	//
-	input clk;          // system clock
-	input rst;          // asynchronous reset
-	input ena;          // clock enable
+	input clk;            // system clock
+	input rst;            // asynchronous reset
+	input ena;            // clock enable
 	input         go;
-	input  [11:0] din;  // data input
+	input  [11:0] din;    // data input
 
-	output [ 3:0] rlen; // run-length
-	reg [ 3:0] rlen;
-	output [ 3:0] size; // size
-	reg [ 3:0] size;
-	output [11:0] amp;  // amplitude
+	output [ 3:0] rlen;   // run-length
+	output [ 3:0] size;   // size
+	output [11:0] amp;    // amplitude
+	output        den;    // data output enable
+	output        dcterm; // DC-term (start of new block)
+
+	reg [ 3:0] rlen, size;
 	reg [11:0] amp;
-	output        den;  // data output enable
-	reg        den;
+	reg        den, dcterm;
 
 	//
 	// variables
@@ -124,7 +131,8 @@ module jpeg_rle1(clk, rst, ena, go, din, rlen, size, amp, den);
 	      11'b000_0000_1??? : sizef = 4'h4; //    8..  15
 	      11'b000_0000_01?? : sizef = 4'h3; //    4..   7
 	      11'b000_0000_001? : sizef = 4'h2; //    2..   3
-	      default           : sizef = 4'h1; //    1
+	      11'b000_0000_0001 : sizef = 4'h1; //    1
+	      default           : sizef = 4'h0; //    0 (DC only)
 	  endcase
 	end
 	endfunction
@@ -144,7 +152,7 @@ module jpeg_rle1(clk, rst, ena, go, din, rlen, size, amp, den);
 	always @(posedge clk)
 	  if (ena)
 	      if (go)
-	          sample_cnt <= #1 0;
+	          sample_cnt <= #1 1; // count AC-terms, 'go=1' is sample-zero
 	      else
 	          sample_cnt <= #1 sample_cnt +1;
 
@@ -158,42 +166,54 @@ module jpeg_rle1(clk, rst, ena, go, din, rlen, size, amp, den);
 
 	// statemachine, create intermediate results
 	always @(posedge clk or negedge rst)
-	  if (!rst)
-	      begin
-	          state <= #1 dc;
-	          rlen  <= #1 0;
-	          size  <= #1 0;
-	          den   <= #1 1'b0;
-	  end
-	else if (ena)
-	  case (state) // synopsys full_case parallel_case
+	  if(!rst)
+	    begin
+	        state  <= #1 dc;
+	        rlen   <= #1 0;
+	        size   <= #1 0;
+	        den    <= #1 1'b0;
+	        dcterm <= #1 1'b0;
+	    end
+	  else if (ena)
+	    case (state) // synopsys full_case parallel_case
 	      dc:
-	        begin
-	            if(go)
-	              state <= #1 ac;
+	        if(go)
+	          begin
+	              state  <= #1 ac;
 
-	            rlen  <= #1 0;
-	            size  <= #1 0;
-	            den   <= #1 1'b0;
-	        end
+	              rlen   <= #1 0;
+	              size   <= #1 sizeof_din;
+	              den    <= #1 1'b1;
+	              dcterm <= #1 1'b1;
+	          end
+	        else
+	          begin
+	              state  <= #1 dc;
+
+	              rlen   <= #1 0;
+	              size   <= #1 0;
+	              den    <= #1 1'b0;
+	              dcterm <= #1 1'b0;
+	          end
 
 	      ac:
 	        if(&sample_cnt)   // finished current block
 	           begin
-	               if(~go)     // go asserted; start next block
-	                 state <= #1 dc;
+	               state <= #1 dc;
 
-	               if (is_zero) // last sample zero ??
+	               if (is_zero) // last sample zero? send EOB
 	                  begin
-	                      rlen <= #1 0;
-	                      size <= #1 0;
-	                      den  <= #1 1'b1;
+	                      rlen   <= #1 0;
+	                      size   <= #1 0;
+	                      den    <= #1 1'b1;
+	                      dcterm <= #1 1'b0;
 	                  end
 	               else
 	                  begin
 	                      rlen <= #1 zero_cnt;
 	                      size <= #1 sizeof_din;
 	                      den  <= #1 1'b1;
+	                      dcterm <= #1 1'b0;
 	                  end
 	           end
 	        else
@@ -207,12 +227,14 @@ module jpeg_rle1(clk, rst, ena, go, din, rlen, size, amp, den);
 	                              rlen <= #1 zero_cnt;
 	                              size <= #1 0;
 	                              den  <= #1 1'b1;
+	                              dcterm <= #1 1'b0;
 	                          end
 	                      else
 	                          begin
 	                              rlen <= #1 zero_cnt;
 	                              size <= #1 0;
 	                              den  <= #1 1'b0;
+	                              dcterm <= #1 1'b0;
 	                          end
 	                  end
 	               else
@@ -220,8 +242,9 @@ module jpeg_rle1(clk, rst, ena, go, din, rlen, size, amp, den);
 	                      rlen <= #1 zero_cnt;
 	                      size <= #1 sizeof_din;
 	                      den  <= #1 1'b1;
+	                      dcterm <= #1 1'b0;
 	                  end
 	           end
-	  endcase
+	    endcase
 
 endmodule

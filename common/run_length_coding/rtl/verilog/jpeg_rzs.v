@@ -37,38 +37,46 @@
 
 //  CVS Log
 //
-//  $Id: jpeg_rzs.v,v 1.2 2002-10-23 09:07:04 rherveille Exp $
+//  $Id: jpeg_rzs.v,v 1.3 2002-10-23 18:58:54 rherveille Exp $
 //
-//  $Date: 2002-10-23 09:07:04 $
-//  $Revision: 1.2 $
+//  $Date: 2002-10-23 18:58:54 $
+//  $Revision: 1.3 $
 //  $Author: rherveille $
 //  $Locker:  $
 //  $State: Exp $
 //
 // Change History:
 //               $Log: not supported by cvs2svn $
+//               Revision 1.2  2002/10/23 09:07:04  rherveille
+//               Improved many files.
+//               Fixed some bugs in Run-Length-Encoder.
+//               Removed dependency on ud_cnt and ro_cnt.
+//               Started (Motion)JPEG hardware encoder project.
+//
 
 `timescale 1ns/10ps
 
-module jpeg_rzs(clk, rst, deni, rleni, sizei, ampi, deno, rleno, sizeo, ampo);
+module jpeg_rzs(clk, rst, deni, dci, rleni, sizei, ampi, deno, dco, rleno, sizeo, ampo);
 
 	//
 	// inputs & outputs
 	//
-	input clk;
-	input rst;
-	input deni;
+	input        clk;
+	input        rst;
+	input        deni;
+	input        dci;
 	input [ 3:0] sizei;
 	input [ 3:0] rleni;
 	input [11:0] ampi;
 
 	output        deno;
-	reg        deno;
+	output        dco;
 	output [ 3:0] sizeo;
-	reg [ 3:0] sizeo;
 	output [ 3:0] rleno;
-	reg [ 3:0] rleno;
 	output [11:0] ampo;
+
+	reg        deno, dco;
+	reg [ 3:0] sizeo, rleno;
 	reg [11:0] ampo;
 
 	//
@@ -79,6 +87,7 @@ module jpeg_rzs(clk, rst, deni, rleni, sizei, ampi, deno, rleno, sizeo, ampo);
 	reg [ 3:0] rlen;
 	reg [11:0] amp;
 	reg        den;
+	reg        dc;
 
 	wire eob;
 	wire zerobl;
@@ -89,22 +98,26 @@ module jpeg_rzs(clk, rst, deni, rleni, sizei, ampi, deno, rleno, sizeo, ampo);
 	//
 
 	always @(posedge clk)
-	  if (deni)
-	     begin
-	         size  <= #1 sizei;
-	         rlen  <= #1 rleni;
-	         amp   <= #1 ampi;
-	     end
+	  if(ena & deni)
+	    begin
+	        size <= #1 sizei;
+	        rlen <= #1 rleni;
+	        amp  <= #1 ampi;
+	    end
 
 	always @(posedge clk)
-	  begin
-	      sizeo <= #1 size;
-	      rleno <= #1 rlen;
-	      ampo  <= #1 amp;
-	  end
+	  if(ena)
+	    begin
+	        sizeo <= #1 size;
+	        rleno <= #1 rlen;
+	        ampo  <= #1 amp;
 
-	assign zerobl = &rleni &&  ~|sizei && deni;
-	assign eob    = ~|{rleni, sizei} && deni;
+	        dc    <= #1 dci;
+	        dco   <= #1 dc;
+	    end
+
+	assign zerobl = &rleni &  ~|sizei & deni;
+	assign eob    = ~|{rleni, sizei} & deni & ~dci;
 
 	always @(posedge clk or negedge rst)
 	  if (!rst)
@@ -114,7 +127,8 @@ module jpeg_rzs(clk, rst, deni, rleni, sizei, ampi, deno, rleno, sizeo, ampo);
 	         deno  <= #1 1'b0;
 	     end
 	  else
-	     case (state) // synopsys full_case parallel_case
+	    if(ena)
+	      case (state) // synopsys full_case parallel_case
 	         1'b0:
 	             begin
 	                 if (zerobl)
@@ -155,5 +169,5 @@ module jpeg_rzs(clk, rst, deni, rleni, sizei, ampi, deno, rleno, sizeo, ampo);
 	                           deno  <= #1 1'b1; // oops, zero-block should have been output
 	                       end
 	             end
-	     endcase
+	      endcase
 endmodule

@@ -34,21 +34,39 @@
 
 //  CVS Log
 //
-//  $Id: jpeg_encoder.v,v 1.1 2002-10-23 09:07:01 rherveille Exp $
+//  $Id: jpeg_encoder.v,v 1.2 2002-10-23 18:58:51 rherveille Exp $
 //
-//  $Date: 2002-10-23 09:07:01 $
-//  $Revision: 1.1 $
+//  $Date: 2002-10-23 18:58:51 $
+//  $Revision: 1.2 $
 //  $Author: rherveille $
 //  $Locker:  $
 //  $State: Exp $
 //
 // Change History:
 //               $Log: not supported by cvs2svn $
+//               Revision 1.1  2002/10/23 09:07:01  rherveille
+//               Improved many files.
+//               Fixed some bugs in Run-Length-Encoder.
+//               Removed dependency on ud_cnt and ro_cnt.
+//               Started (Motion)JPEG hardware encoder project.
+//
 
 
 `include "timescale.v"
 
-module jpeg_encoder(clk, ena, rst, dstrb, din, qnt_val, qnt_cnt, size, rlen, amp, douten);
+module jpeg_encoder(
+	clk,
+	ena,
+	rst,
+	dstrb,
+	din,
+	qnt_val,
+	qnt_cnt,
+	size,
+	rlen,
+	amp,
+	douten
+);
 
 	//
 	// parameters
@@ -193,6 +211,7 @@ module jpeg_encoder(clk, ena, rst, dstrb, din, qnt_val, qnt_cnt, size, rlen, amp
 		.size(size),
 		.rlen(rlen),
 		.amp(amp),
-		.douten(douten)
+		.douten(douten),
+		.bstart()
 	);
 endmodule
