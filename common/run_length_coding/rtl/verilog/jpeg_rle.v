@@ -38,10 +38,10 @@
 
 //  CVS Log
 //
-//  $Id: jpeg_rle.v,v 1.1.1.1 2002-03-26 07:25:12 rherveille Exp $
+//  $Id: jpeg_rle.v,v 1.2 2002-10-23 09:07:04 rherveille Exp $
 //
-//  $Date: 2002-03-26 07:25:12 $
-//  $Revision: 1.1.1.1 $
+//  $Date: 2002-10-23 09:07:04 $
+//  $Revision: 1.2 $
 //  $Author: rherveille $
 //  $Locker:  $
 //  $State: Exp $
@@ -51,7 +51,7 @@
 
 `timescale 1ns/10ps
 
-module jpeg_rle(clk, rst, ena, go, din, size, rlen, amp, den);
+module jpeg_rle(clk, rst, ena, dstrb, din, size, rlen, amp, douten);
 
 	//
 	// parameters
@@ -60,16 +60,16 @@ module jpeg_rle(clk, rst, ena, go, din, size, rlen, amp, den);
 	//
 	// inputs & outputs
 	//
-	input clk;          // system clock
-	input rst;          // asynchronous reset
-	input ena;          // clock enable
-	input         go;
-	input  [11:0] din;  // data input
+	input         clk;     // system clock
+	input         rst;     // asynchronous reset
+	input         ena;     // clock enable
+	input         dstrb;
+	input  [11:0] din;     // data input
 
-	output [ 3:0] size; // size
-	output [ 3:0] rlen; // run-length
-	output [11:0] amp;  // amplitude
-	output        den;  // data output enable
+	output [ 3:0] size;    // size
+	output [ 3:0] rlen;    // run-length
+	output [11:0] amp;     // amplitude
+	output        douten;  // data output enable
 
 	//
 	// variables
@@ -89,7 +89,7 @@ module jpeg_rle(clk, rst, ena, go, din, size, rlen, amp, den);
 		.clk(clk),
 		.rst(rst),
 		.ena(ena),
-		.go(go),
+		.go(dstrb),
 		.din(din),
 		.rlen(rle_rlen),
 		.size(rle_size),
@@ -158,8 +158,8 @@ module jpeg_rle(clk, rst, ena, go, din, size, rlen, amp, den);
 
 
 	// assign outputs
-	assign rlen = rz4_rlen;
-	assign size = rz4_size;
-	assign amp  = rz4_amp;
-	assign den  = rz4_den;
+	assign rlen   = rz4_rlen;
+	assign size   = rz4_size;
+	assign amp    = rz4_amp;
+	assign douten = rz4_den;
 endmodule

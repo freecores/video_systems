@@ -2,6 +2,8 @@
 ////                                                             ////
 ////  Discrete Cosine Transform, MAC unit                        ////
 ////                                                             ////
+////  Virtex-II: Block-Multiplier is used                        ////
+////                                                             ////
 ////  Author: Richard Herveille                                  ////
 ////          richard@asics.ws                                   ////
 ////          www.asics.ws                                       ////
@@ -34,10 +36,10 @@
 
 //  CVS Log
 //
-//  $Id: dct_mac.v,v 1.1.1.1 2002-03-26 07:25:11 rherveille Exp $
+//  $Id: dct_mac.v,v 1.2 2002-10-23 09:06:59 rherveille Exp $
 //
-//  $Date: 2002-03-26 07:25:11 $
-//  $Revision: 1.1.1.1 $
+//  $Date: 2002-10-23 09:06:59 $
+//  $Revision: 1.2 $
 //  $Author: rherveille $
 //  $Locker:  $
 //  $State: Exp $
@@ -47,7 +49,7 @@
 
 `include "timescale.v"
 
-module dct_mac(clk, ena, clr, din, coef, result);
+module dct_mac(clk, ena, dclr, din, coef, result);
 
 	//
 	// parameters
@@ -62,7 +64,7 @@ module dct_mac(clk, ena, clr, din, coef, result);
 	//
 	input               clk;    // clock input
 	input               ena;    // clock enable
-	input               clr;   // start new mac (delayed 1 cycle)
+	input               dclr;   // start new mac (delayed 1 cycle)
 	input  [dwidth-1:0] din;    // data input
 	input  [cwidth-1:0] coef;   // coefficient input
 	output [rwidth-1:0] result; // mac-result
@@ -71,44 +73,34 @@ module dct_mac(clk, ena, clr, din, coef, result);
 	//
 	// variables
 	//
-	reg dclr;
-
 	wire [mwidth-1:0] idin;
 	wire [mwidth-1:0] icoef;
-	wire [mwidth+mwidth-1:0] imres;
 
-	reg  [mwidth -1:0] mult_res;
+	reg  [mwidth -1:0] mult_res /* synthesis syn_multstyle="block_mult" syn_pipeline=1*/ ;
 	wire [rwidth -1:0] ext_mult_res;
 
 
 	//
 	// module body
 	//
-	always@(posedge clk)
-		if(ena)
-			dclr <= #1 clr;
-
 	assign icoef = { {(mwidth-cwidth){coef[cwidth-1]}}, coef};
 	assign idin  = { {(mwidth-dwidth){din[dwidth-1]}}, din};
 
-	assign imres = icoef * idin;
-
 	// generate multiplier structure
-	always@(posedge clk)
-		if (ena)
-			mult_res <= #1 imres[mwidth-1:0];
+	always @(posedge clk)
+	  if(ena)
+	    mult_res <= #1 icoef * idin;
 
 	assign ext_mult_res = { {3{mult_res[mwidth-1]}}, mult_res};
 
 	// generate adder structure
-	always@(posedge clk)
-		if (ena)
-			if (dclr)
-				result <= #1 ext_mult_res;
-			else
-				result <= #1 ext_mult_res + result;
+	always @(posedge clk)
+	  if(ena)
+	    if(dclr)
+	      result <= #1 ext_mult_res;
+	    else
+	      result <= #1 ext_mult_res + result;
 endmodule
-
 
 
 

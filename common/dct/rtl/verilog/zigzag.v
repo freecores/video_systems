@@ -35,10 +35,10 @@
 
 //  CVS Log
 //
-//  $Id: zigzag.v,v 1.1.1.1 2002-03-26 07:25:11 rherveille Exp $
+//  $Id: zigzag.v,v 1.2 2002-10-23 09:06:59 rherveille Exp $
 //
-//  $Date: 2002-03-26 07:25:11 $
-//  $Revision: 1.1.1.1 $
+//  $Date: 2002-10-23 09:06:59 $
+//  $Revision: 1.2 $
 //  $Author: rherveille $
 //  $Locker:  $
 //  $State: Exp $
@@ -91,19 +91,16 @@ module zigzag(
 	// variables
 	//
 
-	reg ddstrb, ld_zigzag;
+	reg ld_zigzag;
 	reg [11:0] sresult [63:0]; // store results for zig-zagging
-	
+
 	//
 	// module body
 	//
 
-	always@(posedge clk)
-		if (ena)
-		begin
-			ddstrb    <= #1 dstrb;
-			ld_zigzag <= #1 ddstrb;
-		end
+	always @(posedge clk)
+	  if(ena)
+	    ld_zigzag <= #1 dstrb;
 
 	assign douten = ld_zigzag;
 
@@ -127,78 +124,78 @@ module zigzag(
 	// zig-zag the DCT results
 	integer n;
 
-	always@(posedge clk)
-			if (ena)
-				if (ld_zigzag)  // reload results-register file
-				begin
-					sresult[63] <= #1 din_00;
-					sresult[62] <= #1 din_01;
-					sresult[61] <= #1 din_10;
-					sresult[60] <= #1 din_20;
-					sresult[59] <= #1 din_11;
-					sresult[58] <= #1 din_02;
-					sresult[57] <= #1 din_03;
-					sresult[56] <= #1 din_12;
-					sresult[55] <= #1 din_21;
-					sresult[54] <= #1 din_30;
-					sresult[53] <= #1 din_40;
-					sresult[52] <= #1 din_31;
-					sresult[51] <= #1 din_22;
-					sresult[50] <= #1 din_13;
-					sresult[49] <= #1 din_04;
-					sresult[48] <= #1 din_05;
-					sresult[47] <= #1 din_14;
-					sresult[46] <= #1 din_23;
-					sresult[45] <= #1 din_32;
-					sresult[44] <= #1 din_41;
-					sresult[43] <= #1 din_50;
-					sresult[42] <= #1 din_60;
-					sresult[41] <= #1 din_51;
-					sresult[40] <= #1 din_42;
-					sresult[39] <= #1 din_33;
-					sresult[38] <= #1 din_24;
-					sresult[37] <= #1 din_15;
-					sresult[36] <= #1 din_06;
-					sresult[35] <= #1 din_07;
-					sresult[34] <= #1 din_16;
-					sresult[33] <= #1 din_25;
-					sresult[32] <= #1 din_34;
-					sresult[31] <= #1 din_43;
-					sresult[30] <= #1 din_52;
-					sresult[29] <= #1 din_61;
-					sresult[28] <= #1 din_70;
-					sresult[27] <= #1 din_71;
-					sresult[26] <= #1 din_62;
-					sresult[25] <= #1 din_53;
-					sresult[24] <= #1 din_44;
-					sresult[23] <= #1 din_35;
-					sresult[22] <= #1 din_26;
-					sresult[21] <= #1 din_17;
-					sresult[20] <= #1 din_27;
-					sresult[19] <= #1 din_36;
-					sresult[18] <= #1 din_45;
-					sresult[17] <= #1 din_54;
-					sresult[16] <= #1 din_63;
-					sresult[15] <= #1 din_72;
-					sresult[14] <= #1 din_73;
-					sresult[13] <= #1 din_64;
-					sresult[12] <= #1 din_55;
-					sresult[11] <= #1 din_46;
-					sresult[10] <= #1 din_37;
-					sresult[09] <= #1 din_47;
-					sresult[08] <= #1 din_56;
-					sresult[07] <= #1 din_65;
-					sresult[06] <= #1 din_74;
-					sresult[05] <= #1 din_75;
-					sresult[04] <= #1 din_66;
-					sresult[03] <= #1 din_57;
-					sresult[02] <= #1 din_67;
-					sresult[01] <= #1 din_76;
-					sresult[00] <= #1 din_77;
-				end
-				else       // shift results out
-					for (n=1; n<=63; n=n+1) // do not change sresult[0]
-						sresult[n] <= #1 sresult[n -1];
+	always @(posedge clk)
+	  if(ena)
+	    if(ld_zigzag)   // reload results-register file
+	    begin
+	        sresult[63] <= #1 din_00;
+	        sresult[62] <= #1 din_01;
+	        sresult[61] <= #1 din_10;
+	        sresult[60] <= #1 din_20;
+	        sresult[59] <= #1 din_11;
+	        sresult[58] <= #1 din_02;
+	        sresult[57] <= #1 din_03;
+	        sresult[56] <= #1 din_12;
+	        sresult[55] <= #1 din_21;
+	        sresult[54] <= #1 din_30;
+	        sresult[53] <= #1 din_40;
+	        sresult[52] <= #1 din_31;
+	        sresult[51] <= #1 din_22;
+	        sresult[50] <= #1 din_13;
+	        sresult[49] <= #1 din_04;
+	        sresult[48] <= #1 din_05;
+	        sresult[47] <= #1 din_14;
+	        sresult[46] <= #1 din_23;
+	        sresult[45] <= #1 din_32;
+	        sresult[44] <= #1 din_41;
+	        sresult[43] <= #1 din_50;
+	        sresult[42] <= #1 din_60;
+	        sresult[41] <= #1 din_51;
+	        sresult[40] <= #1 din_42;
+	        sresult[39] <= #1 din_33;
+	        sresult[38] <= #1 din_24;
+	        sresult[37] <= #1 din_15;
+	        sresult[36] <= #1 din_06;
+	        sresult[35] <= #1 din_07;
+	        sresult[34] <= #1 din_16;
+	        sresult[33] <= #1 din_25;
+	        sresult[32] <= #1 din_34;
+	        sresult[31] <= #1 din_43;
+	        sresult[30] <= #1 din_52;
+	        sresult[29] <= #1 din_61;
+	        sresult[28] <= #1 din_70;
+	        sresult[27] <= #1 din_71;
+	        sresult[26] <= #1 din_62;
+	        sresult[25] <= #1 din_53;
+	        sresult[24] <= #1 din_44;
+	        sresult[23] <= #1 din_35;
+	        sresult[22] <= #1 din_26;
+	        sresult[21] <= #1 din_17;
+	        sresult[20] <= #1 din_27;
+	        sresult[19] <= #1 din_36;
+	        sresult[18] <= #1 din_45;
+	        sresult[17] <= #1 din_54;
+	        sresult[16] <= #1 din_63;
+	        sresult[15] <= #1 din_72;
+	        sresult[14] <= #1 din_73;
+	        sresult[13] <= #1 din_64;
+	        sresult[12] <= #1 din_55;
+	        sresult[11] <= #1 din_46;
+	        sresult[10] <= #1 din_37;
+	        sresult[09] <= #1 din_47;
+	        sresult[08] <= #1 din_56;
+	        sresult[07] <= #1 din_65;
+	        sresult[06] <= #1 din_74;
+	        sresult[05] <= #1 din_75;
+	        sresult[04] <= #1 din_66;
+	        sresult[03] <= #1 din_57;
+	        sresult[02] <= #1 din_67;
+	        sresult[01] <= #1 din_76;
+	        sresult[00] <= #1 din_77;
+	    end
+	  else       // shift results out
+	    for (n=1; n<=63; n=n+1) // do not change sresult[0]
+	       sresult[n] <= #1 sresult[n -1];
 
 	assign dout = sresult[63];
 endmodule

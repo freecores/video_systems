@@ -34,10 +34,10 @@
 
 //  CVS Log
 //
-//  $Id: dctub.v,v 1.1.1.1 2002-03-26 07:25:11 rherveille Exp $
+//  $Id: dctub.v,v 1.2 2002-10-23 09:06:59 rherveille Exp $
 //
-//  $Date: 2002-03-26 07:25:11 $
-//  $Revision: 1.1.1.1 $
+//  $Date: 2002-10-23 09:06:59 $
+//  $Revision: 1.2 $
 //  $Author: rherveille $
 //  $Locker:  $
 //  $State: Exp $
@@ -48,21 +48,22 @@
 
 `include "timescale.v"
 
-module dctub(clk, ena, dgo, x, y, ddin, 
+module dctub(clk, ena, ddgo, x, y, ddin,
 		dout0, dout1, dout2, dout3, dout4, dout5, dout6, dout7);
 
 	parameter coef_width = 16;
-	parameter [2:0] v = 3'h7;
+	parameter di_width = 8;
+	parameter [2:0] v = 3'h0;
 
 	//
 	// inputs & outputs
 	//
 	input clk;
 	input ena;
-	input dgo;         // double delayed go signal
+	input ddgo;               // double delayed go strobe
 	input [2:0] x, y;
 
-	input  [ 7:0] ddin; // delayed data input
+	input  [di_width:1] ddin; // delayed data input
 	output [11:0] dout0, dout1, dout2, dout3, dout4, dout5, dout6, dout7;
 
 	//
@@ -70,91 +71,91 @@ module dctub(clk, ena, dgo, x, y, ddin,
 	//
 
 	// Hookup DCT units
-	dctu #(coef_width, v, 3'h0) 
-		dct_unit_0 (
-			.clk(clk),
-			.ena(ena),
-			.dgo(dgo),
-			.x(x),
-			.y(y),
-			.ddin(ddin),
-			.dout(dout0)
-		);
+	dctu #(coef_width, di_width, v, 3'h0)
+	dct_unit_0 (
+		.clk(clk),
+		.ena(ena),
+		.ddgo(ddgo),
+		.x(x),
+		.y(y),
+		.ddin(ddin),
+		.dout(dout0)
+	);
 
-	dctu #(coef_width, v, 3'h1)
-		dct_unit_1 (
-			.clk(clk),
-			.ena(ena),
-			.dgo(dgo),
-			.x(x),
-			.y(y),
-			.ddin(ddin),
-			.dout(dout1)
-		);
+	dctu #(coef_width, di_width, v, 3'h1)
+	dct_unit_1 (
+		.clk(clk),
+		.ena(ena),
+		.ddgo(ddgo),
+		.x(x),
+		.y(y),
+		.ddin(ddin),
+		.dout(dout1)
+	);
 
-	dctu #(coef_width, v, 3'h2)
-		dct_unit_2 (
-			.clk(clk),
-			.ena(ena),
-			.dgo(dgo),
-			.x(x),
-			.y(y),
-			.ddin(ddin),
-			.dout(dout2)
-		);
+	dctu #(coef_width, di_width, v, 3'h2)
+	dct_unit_2 (
+		.clk(clk),
+		.ena(ena),
+		.ddgo(ddgo),
+		.x(x),
+		.y(y),
+		.ddin(ddin),
+		.dout(dout2)
+	);
 
-	dctu #(coef_width, v, 3'h3)
-		dct_unit_3 (
-			.clk(clk),
-			.ena(ena),
-			.dgo(dgo),
-			.x(x),
-			.y(y),
-			.ddin(ddin),
-			.dout(dout3)
-		);
+	dctu #(coef_width, di_width, v, 3'h3)
+	dct_unit_3 (
+		.clk(clk),
+		.ena(ena),
+		.ddgo(ddgo),
+		.x(x),
+		.y(y),
+		.ddin(ddin),
+		.dout(dout3)
+	);
 
-	dctu #(coef_width, v, 3'h4)
-		dct_unit_4 (
-			.clk(clk),
-			.ena(ena),
-			.dgo(dgo),
-			.x(x),
-			.y(y),
-			.ddin(ddin),
-			.dout(dout4)
-		);
+	dctu #(coef_width, di_width, v, 3'h4)
+	dct_unit_4 (
+		.clk(clk),
+		.ena(ena),
+		.ddgo(ddgo),
+		.x(x),
+		.y(y),
+		.ddin(ddin),
+		.dout(dout4)
+	);
 
-	dctu #(coef_width, v, 3'h5)
-		dct_unit_5 (
-			.clk(clk),
-			.ena(ena),
-			.dgo(dgo),
-			.x(x),
-			.y(y),
-			.ddin(ddin),
-			.dout(dout5)
-		);
+	dctu #(coef_width, di_width, v, 3'h5)
+	dct_unit_5 (
+		.clk(clk),
+		.ena(ena),
+		.ddgo(ddgo),
+		.x(x),
+		.y(y),
+		.ddin(ddin),
+		.dout(dout5)
+	);
 
-	dctu #(coef_width, v, 3'h6)
-		dct_unit_6 (
-			.clk(clk),
-			.ena(ena),
-			.dgo(dgo),
-			.x(x),
-			.y(y),
-			.ddin(ddin),
-			.dout(dout6)
-		);
+	dctu #(coef_width, di_width, v, 3'h6)
+	dct_unit_6 (
+		.clk(clk),
+		.ena(ena),
+		.ddgo(ddgo),
+		.x(x),
+		.y(y),
+		.ddin(ddin),
+		.dout(dout6)
+	);
 
-	dctu #(coef_width, v, 3'h7)
-		dct_unit_7 (
-			.clk(clk),
-			.ena(ena),
-			.dgo(dgo),
-			.x(x),
-			.y(y),
-			.ddin(ddin),
-			.dout(dout7)
-		);
+	dctu #(coef_width, di_width, v, 3'h7)
+	dct_unit_7 (
+		.clk(clk),
+		.ena(ena),
+		.ddgo(ddgo),
+		.x(x),
+		.y(y),
+		.ddin(ddin),
+		.dout(dout7)
+	);
 endmodule

@@ -34,10 +34,10 @@
 
 //  CVS Log
 //
-//  $Id: dctu.v,v 1.1.1.1 2002-03-26 07:25:11 rherveille Exp $
+//  $Id: dctu.v,v 1.2 2002-10-23 09:06:59 rherveille Exp $
 //
-//  $Date: 2002-03-26 07:25:11 $
-//  $Revision: 1.1.1.1 $
+//  $Date: 2002-10-23 09:06:59 $
+//  $Revision: 1.2 $
 //  $Author: rherveille $
 //  $Locker:  $
 //  $State: Exp $
@@ -48,9 +48,10 @@
 
 `include "timescale.v"
 
-module dctu(clk, ena, dgo, x, y, ddin, dout);
+module dctu(clk, ena, ddgo, x, y, ddin, dout);
 
 	parameter coef_width = 16;
+	parameter di_width = 8;
 	parameter [2:0] v = 0;
 	parameter [2:0] u = 0;
 
@@ -60,39 +61,36 @@ module dctu(clk, ena, dgo, x, y, ddin, dout);
 
 	input clk;
 	input ena;
-	input dgo; // double delayed go-signal
+	input ddgo;               // double delayed go signal
 	input [2:0] x, y;
 
-	input  [ 7:0] ddin; // delayed data input signal
+	input  [di_width:1] ddin; // delayed data input
 	output [11:0] dout;
 
 	//
 	// variables
 	//
-	wire [31:0] icoef;
-	reg [coef_width-1:0] coef;
+	reg [      31:0] coef;
+
 	wire [coef_width +10:0] result;
-
 	`include "../../../dct/rtl/verilog/dct_cos_table.v"
-
 	//
 	// module body
 	//
 
 	// hookup cosine-table
-	assign icoef = dct_cos_table(x, y, u, v);
-
-	always@(posedge clk)
-		if(ena)
-			coef <= #1 icoef[31:31-coef_width +1];
+	always @(posedge clk)
+	  if(ena)
+	    coef <= #1 dct_cos_table(x, y, u, v);
 
 	// hookup dct-mac unit
-	dct_mac #(8, coef_width) macu (
+	dct_mac #(8, coef_width)
+	macu (
 		.clk(clk),
 		.ena(ena),
-		.clr(dgo),
+		.dclr(ddgo),
 		.din(ddin),
-		.coef(coef),
+		.coef( coef[31:31 -coef_width +1] ),
 		.result(result)
 	);
 

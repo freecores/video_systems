@@ -34,10 +34,10 @@
 
 //  CVS Log
 //
-//  $Id: bench_top.v,v 1.1.1.1 2002-03-26 07:25:11 rherveille Exp $
+//  $Id: bench_top.v,v 1.2 2002-10-23 09:06:58 rherveille Exp $
 //
-//  $Date: 2002-03-26 07:25:11 $
-//  $Revision: 1.1.1.1 $
+//  $Date: 2002-10-23 09:06:58 $
+//  $Revision: 1.2 $
 //  $Author: rherveille $
 //  $Locker:  $
 //  $State: Exp $
@@ -115,7 +115,8 @@ module bench_top();
 	//                                                                //
 	////////////////////////////////////////////////////////////////////
 
-	fdct #(13) dut (
+	fdct #(13)
+	dut (
 		.clk(clk),
 		.ena(1'b1),
 		.rst(rst),
@@ -136,6 +137,14 @@ module bench_top();
 	// initial statements
 	initial
 	begin
+
+		// waves statement
+		`ifdef WAVES
+		    $shm_open("waves");
+		    $shm_probe("AS",bench_top,"AS");
+		    $display("INFO: Signal dump enabled ...\n\n");
+		`endif
+
 		// fill input-table
 
 		input_list[00] <= 8'd139;
@@ -351,8 +360,8 @@ module bench_top();
 		for(y=0; y<=7; y=y+1)
 		for(x=0; x<=7; x=x+1)
 		begin
-			din = #1 input_list[y*8 +x] -8'd128;
-			@(posedge clk);
+		  din = #1 input_list[y*8 +x] -8'd128;
+		  @(posedge clk);
 		end
 
 		// wait for 'den' signal
@@ -367,10 +376,10 @@ module bench_top();
 		begin
 			if (dout !== output_list[y*8 +x])
 			begin
-				$display("Data compare error, received %h, expected %h. %d", 
-					dout, output_list[y*8 +x], y*8 +x);
+			  $display("Data compare error, received %h, expected %h. %d",
+			           dout, output_list[y*8 +x], y*8 +x);
 
-				err_cnt = err_cnt +1;
+			  err_cnt = err_cnt +1;
 			end
 
 			@(posedge clk);

@@ -34,10 +34,10 @@
 
 //  CVS Log
 //
-//  $Id: jpeg_qnr.v,v 1.1.1.1 2002-03-26 07:25:12 rherveille Exp $
+//  $Id: jpeg_qnr.v,v 1.2 2002-10-23 09:07:03 rherveille Exp $
 //
-//  $Date: 2002-03-26 07:25:12 $
-//  $Revision: 1.1.1.1 $
+//  $Date: 2002-10-23 09:07:03 $
+//  $Revision: 1.2 $
 //  $Author: rherveille $
 //  $Locker:  $
 //  $State: Exp $
@@ -58,14 +58,14 @@ module jpeg_qnr(clk, ena, rst, dstrb, din, qnt_val, qnt_cnt, dout, douten);
 	//
 	// inputs & outputs
 	//
-	input clk;             // system clock
-	input ena;             // clock enable
-	input rst;             // asynchronous active low reset
+	input clk;                    // system clock
+	input ena;                    // clock enable
+	input rst;                    // asynchronous active low reset
 
 	input                dstrb;   // present dstrb 1clk cycle before din
 	input  [d_width-1:0] din;     // data input
 	input  [ 7:0]        qnt_val; // quantization value
-	
+
 	output [ 5:0]        qnt_cnt; // sample number (get quantization value qnt_cnt)
 	output [10:0]        dout;    // data output
 	output               douten;
@@ -80,23 +80,24 @@ module jpeg_qnr(clk, ena, rst, dstrb, din, qnt_val, qnt_cnt, dout, douten);
 	reg  [d_width+3:0] dep;// data enable pipeline
 
 	// generate sample counter
-	ro_cnt #(6, 1'b1, 6'h0) smpl_cnt (
-		.clk(clk),
-		.nReset(rst),
-		.rst(1'b0),
-		.cnt_en(ena),
-		.go(dstrb),
-		.done(dcnt),
-		.d(6'h0),
-		.q(qnt_cnt)
-	);
+	reg  [5:0] qnt_cnt;
+	wire       dcnt     = &qnt_cnt;
+
+	always @(posedge clk or negedge rst)
+	  if (~rst)
+	     qnt_cnt <= #1 6'h0;
+	  else if (dstrb)
+	     qnt_cnt <= #1 6'h0;
+	  else if (ena)
+	     qnt_cnt <= #1 qnt_cnt + 6'h1;
 
 	// generate intermediate dividor/divident values
 	assign id = { {(d_width - 8){1'b0}}, qnt_val};
 	assign iz = { {(z_width - d_width){din[d_width-1]}}, din};
 
 	// hookup division unit
-	div_su #(z_width) divider (
+	div_su #(z_width)
+	divider (
 		.clk(clk),
 		.ena(ena),
 		.z(iz),
@@ -108,31 +109,33 @@ module jpeg_qnr(clk, ena, rst, dstrb, din, qnt_val, qnt_cnt, dout, douten);
 	);
 
 	// round result to the nearest integer
-	always@(posedge clk)
-		if (ena)
-			if (iq[0])
-				if (iq[d_width])
-					rq <= #1 iq - 1'h1;
-				else
-					rq <= #1 iq + 1'h1;
-			else
-				rq <= #1 iq;
+	always @(posedge clk)
+	  if (ena)
+	    if (iq[0])
+	      if (iq[d_width])
+	         rq <= #1 iq - 1'h1;
+	      else
+	         rq <= #1 iq + 1'h1;
+	    else
+	       rq <= #1 iq;
 
 	// assign dout signal
 	assign dout = rq[d_width -1: d_width-11];
 
+
 	// generate data-out enable signal
+	// This is a pipeline, data is not dependant on sample-count
 	integer n;
-	always@(posedge clk or negedge rst)
-		if (!rst)
-			dep <= #1 0;
-		else if(ena)
-			begin
-				dep[0] <= #1 dstrb;
-				
-				for(n=1; n <= d_width +3; n = n +1)
-					dep[n] <= #1 dep[n-1];
-			end
+	always @(posedge clk or negedge rst)
+	  if (!rst)
+	     dep <= #1 0;
+	  else if(ena)
+	     begin
+	         dep[0] <= #1 dstrb;
+
+	         for (n=1; n <= d_width +3; n = n +1)
+	             dep[n] <= #1 dep[n-1];
+	     end
 
 	assign douten = dep[d_width +3];
 endmodule

@@ -41,10 +41,10 @@
 
 //  CVS Log
 //
-//  $Id: dct_syn.v,v 1.1.1.1 2002-03-26 07:25:11 rherveille Exp $
+//  $Id: dct_syn.v,v 1.2 2002-10-23 09:06:59 rherveille Exp $
 //
-//  $Date: 2002-03-26 07:25:11 $
-//  $Revision: 1.1.1.1 $
+//  $Date: 2002-10-23 09:06:59 $
+//  $Revision: 1.2 $
 //  $Author: rherveille $
 //  $Locker:  $
 //  $State: Exp $
@@ -53,7 +53,9 @@
 //               $Log: not supported by cvs2svn $
 //
 
+// synopsys translate_off
 `include "timescale.v"
+// synopsys translate_on
 
 module dct_syn(clk, ena, rst, dstrb, din, dout, den);
 
@@ -71,6 +73,12 @@ module dct_syn(clk, ena, rst, dstrb, din, dout, den);
 	// DCT unit
 	//
 
+	// As little as 11bits coefficients can be used while
+	// all errors remain in the decimal bit range (dout[0])
+	// total errors =  5(14bit resolution)
+	//              = 12(13bit resolution)
+	//              = 26(12bit resolution)
+	//              = 54(11bit resolution)
 	fdct #(9) dut (
 		.clk(clk),
 		.ena(1'b1),

@@ -34,10 +34,10 @@
 
 //  CVS Log
 //
-//  $Id: dct_cos_table.v,v 1.1.1.1 2002-03-26 07:25:11 rherveille Exp $
+//  $Id: dct_cos_table.v,v 1.2 2002-10-23 09:06:59 rherveille Exp $
 //
-//  $Date: 2002-03-26 07:25:11 $
-//  $Revision: 1.1.1.1 $
+//  $Date: 2002-10-23 09:06:59 $
+//  $Revision: 1.2 $
 //  $Author: rherveille $
 //  $Locker:  $
 //  $State: Exp $
