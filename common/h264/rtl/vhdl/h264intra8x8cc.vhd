@@ -264,9 +264,9 @@ begin
 			-- note: quad 1 and 2 don't use sumt+suml but prefer sumt or suml if poss
 			if lvalid='1' and tvalid='1' and (quad=0 or quad=3) then	--left+top valid
 				sumtl <= ('0'&sumt) + ('0'&suml) + 4;
-			elsif lvalid='1' and (tvalid='0' or quad=1) then
+			elsif lvalid='1' and (tvalid='0' or quad=2) then
 				sumtl <= (suml&'0') + 4;
-			elsif (lvalid='0' or quad=2) and tvalid='1' then
+			elsif (lvalid='0' or quad=1) and tvalid='1' then
 				sumtl <= (sumt&'0') + 4;
 			else
 				sumtl <= x"80"&b"000";
