@@ -62,7 +62,7 @@ entity h264quantise is
 	);
 end h264quantise;
 
-architecture quant of h264quantise is
+architecture hw of h264quantise is
 	--
 	signal zig : std_logic_vector(3 downto 0) := x"F";
 	signal qmf : std_logic_vector(13 downto 0) := (others=>'0');
@@ -84,25 +84,25 @@ begin
 	--we need to multiply by PF (to complete transform) and divide by quantisation qstep (ie QP rescaled)
 	--so we transform it PF/qstep(QP) to qmf/2^n and do a single multiply
 	qmfA <=
-		CONV_STD_LOGIC_VECTOR(13107,14) when QP=0 or QP=6 or QP=12 or QP=18 or QP=24 or QP=30 or QP=36 or QP=42 or QP=48 else
-		CONV_STD_LOGIC_VECTOR(11916,14) when QP=1 or QP=7 or QP=13 or QP=19 or QP=25 or QP=31 or QP=37 or QP=43 or QP=49 else
-		CONV_STD_LOGIC_VECTOR(10082,14) when QP=2 or QP=8 or QP=14 or QP=20 or QP=26 or QP=32 or QP=38 or QP=44 or QP=50 else
-		CONV_STD_LOGIC_VECTOR(9362,14) when QP=3 or QP=9 or QP=15 or QP=21 or QP=27 or QP=33 or QP=39 or QP=45 or QP=51 else
-		CONV_STD_LOGIC_VECTOR(8192,14) when QP=4 or QP=10 or QP=16 or QP=22 or QP=28 or QP=34 or QP=40 or QP=46 else
+		CONV_STD_LOGIC_VECTOR(13107,14) when ('0'&QP)=0 or ('0'&QP)=6 or ('0'&QP)=12 or ('0'&QP)=18 or ('0'&QP)=24 or ('0'&QP)=30 or ('0'&QP)=36 or ('0'&QP)=42 or ('0'&QP)=48 else
+		CONV_STD_LOGIC_VECTOR(11916,14) when ('0'&QP)=1 or ('0'&QP)=7 or ('0'&QP)=13 or ('0'&QP)=19 or ('0'&QP)=25 or ('0'&QP)=31 or ('0'&QP)=37 or ('0'&QP)=43 or ('0'&QP)=49 else
+		CONV_STD_LOGIC_VECTOR(10082,14) when ('0'&QP)=2 or ('0'&QP)=8 or ('0'&QP)=14 or ('0'&QP)=20 or ('0'&QP)=26 or ('0'&QP)=32 or ('0'&QP)=38 or ('0'&QP)=44 or ('0'&QP)=50 else
+		CONV_STD_LOGIC_VECTOR(9362,14) when ('0'&QP)=3 or ('0'&QP)=9 or ('0'&QP)=15 or ('0'&QP)=21 or ('0'&QP)=27 or ('0'&QP)=33 or ('0'&QP)=39 or ('0'&QP)=45 or ('0'&QP)=51 else
+		CONV_STD_LOGIC_VECTOR(8192,14) when ('0'&QP)=4 or ('0'&QP)=10 or ('0'&QP)=16 or ('0'&QP)=22 or ('0'&QP)=28 or ('0'&QP)=34 or ('0'&QP)=40 or ('0'&QP)=46 else
 		CONV_STD_LOGIC_VECTOR(7282,14);
 	qmfB <=
-		CONV_STD_LOGIC_VECTOR(5243,14) when QP=0 or QP=6 or QP=12 or QP=18 or QP=24 or QP=30 or QP=36 or QP=42 or QP=48 else
-		CONV_STD_LOGIC_VECTOR(4660,14) when QP=1 or QP=7 or QP=13 or QP=19 or QP=25 or QP=31 or QP=37 or QP=43 or QP=49 else
-		CONV_STD_LOGIC_VECTOR(4194,14) when QP=2 or QP=8 or QP=14 or QP=20 or QP=26 or QP=32 or QP=38 or QP=44 or QP=50 else
-		CONV_STD_LOGIC_VECTOR(3647,14) when QP=3 or QP=9 or QP=15 or QP=21 or QP=27 or QP=33 or QP=39 or QP=45 or QP=51 else
-		CONV_STD_LOGIC_VECTOR(3355,14) when QP=4 or QP=10 or QP=16 or QP=22 or QP=28 or QP=34 or QP=40 or QP=46 else
+		CONV_STD_LOGIC_VECTOR(5243,14) when ('0'&QP)=0 or ('0'&QP)=6 or ('0'&QP)=12 or ('0'&QP)=18 or ('0'&QP)=24 or ('0'&QP)=30 or ('0'&QP)=36 or ('0'&QP)=42 or ('0'&QP)=48 else
+		CONV_STD_LOGIC_VECTOR(4660,14) when ('0'&QP)=1 or ('0'&QP)=7 or ('0'&QP)=13 or ('0'&QP)=19 or ('0'&QP)=25 or ('0'&QP)=31 or ('0'&QP)=37 or ('0'&QP)=43 or ('0'&QP)=49 else
+		CONV_STD_LOGIC_VECTOR(4194,14) when ('0'&QP)=2 or ('0'&QP)=8 or ('0'&QP)=14 or ('0'&QP)=20 or ('0'&QP)=26 or ('0'&QP)=32 or ('0'&QP)=38 or ('0'&QP)=44 or ('0'&QP)=50 else
+		CONV_STD_LOGIC_VECTOR(3647,14) when ('0'&QP)=3 or ('0'&QP)=9 or ('0'&QP)=15 or ('0'&QP)=21 or ('0'&QP)=27 or ('0'&QP)=33 or ('0'&QP)=39 or ('0'&QP)=45 or ('0'&QP)=51 else
+		CONV_STD_LOGIC_VECTOR(3355,14) when ('0'&QP)=4 or ('0'&QP)=10 or ('0'&QP)=16 or ('0'&QP)=22 or ('0'&QP)=28 or ('0'&QP)=34 or ('0'&QP)=40 or ('0'&QP)=46 else
 		CONV_STD_LOGIC_VECTOR(2893,14);
 	qmfC <=
-		CONV_STD_LOGIC_VECTOR(8066,14) when QP=0 or QP=6 or QP=12 or QP=18 or QP=24 or QP=30 or QP=36 or QP=42 or QP=48 else
-		CONV_STD_LOGIC_VECTOR(7490,14) when QP=1 or QP=7 or QP=13 or QP=19 or QP=25 or QP=31 or QP=37 or QP=43 or QP=49 else
-		CONV_STD_LOGIC_VECTOR(6554,14) when QP=2 or QP=8 or QP=14 or QP=20 or QP=26 or QP=32 or QP=38 or QP=44 or QP=50 else
-		CONV_STD_LOGIC_VECTOR(5825,14) when QP=3 or QP=9 or QP=15 or QP=21 or QP=27 or QP=33 or QP=39 or QP=45 or QP=51 else
-		CONV_STD_LOGIC_VECTOR(5243,14) when QP=4 or QP=10 or QP=16 or QP=22 or QP=28 or QP=34 or QP=40 or QP=46 else
+		CONV_STD_LOGIC_VECTOR(8066,14) when ('0'&QP)=0 or ('0'&QP)=6 or ('0'&QP)=12 or ('0'&QP)=18 or ('0'&QP)=24 or ('0'&QP)=30 or ('0'&QP)=36 or ('0'&QP)=42 or ('0'&QP)=48 else
+		CONV_STD_LOGIC_VECTOR(7490,14) when ('0'&QP)=1 or ('0'&QP)=7 or ('0'&QP)=13 or ('0'&QP)=19 or ('0'&QP)=25 or ('0'&QP)=31 or ('0'&QP)=37 or ('0'&QP)=43 or ('0'&QP)=49 else
+		CONV_STD_LOGIC_VECTOR(6554,14) when ('0'&QP)=2 or ('0'&QP)=8 or ('0'&QP)=14 or ('0'&QP)=20 or ('0'&QP)=26 or ('0'&QP)=32 or ('0'&QP)=38 or ('0'&QP)=44 or ('0'&QP)=50 else
+		CONV_STD_LOGIC_VECTOR(5825,14) when ('0'&QP)=3 or ('0'&QP)=9 or ('0'&QP)=15 or ('0'&QP)=21 or ('0'&QP)=27 or ('0'&QP)=33 or ('0'&QP)=39 or ('0'&QP)=45 or ('0'&QP)=51 else
+		CONV_STD_LOGIC_VECTOR(5243,14) when ('0'&QP)=4 or ('0'&QP)=10 or ('0'&QP)=16 or ('0'&QP)=22 or ('0'&QP)=28 or ('0'&QP)=34 or ('0'&QP)=40 or ('0'&QP)=46 else
 		CONV_STD_LOGIC_VECTOR(4559,14);
 	--
 process(CLK)
@@ -149,19 +149,19 @@ begin
 		--rr := b"000";			--no rounding (=> -ve numbers round away from zero)
 		rr := b"0"&zr(29)&'1';	--round to zero if <0.75
 		if enab2='1' then
-			if QP < 6 then
+			if ('0'&QP) < 6 then
 				zz <= zr(28 downto 13) + rr;
-			elsif QP < 12 then
+			elsif ('0'&QP) < 12 then
 				zz <= zr(29 downto 14) + rr;
-			elsif QP < 18 then
+			elsif ('0'&QP) < 18 then
 				zz <= zr(30 downto 15) + rr;
-			elsif QP < 24 then
+			elsif ('0'&QP) < 24 then
 				zz <= sxt(zr(30 downto 16),16) + rr;
-			elsif QP < 30 then
+			elsif ('0'&QP) < 30 then
 				zz <= sxt(zr(30 downto 17),16) + rr;
-			elsif QP < 36 then
+			elsif ('0'&QP) < 36 then
 				zz <= sxt(zr(30 downto 18),16) + rr;
-			elsif QP < 42 then
+			elsif ('0'&QP) < 42 then
 				zz <= sxt(zr(30 downto 19),16) + rr;
 			else
 				zz <= sxt(zr(30 downto 20),16) + rr;
@@ -179,4 +179,4 @@ begin
 	end if;
 end process;
 	--
-end quant;
+end hw;
