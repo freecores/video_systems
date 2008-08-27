@@ -109,7 +109,7 @@ entity h264cavlc is
 	);
 end h264cavlc;
 
-architecture cavlc of h264cavlc is
+architecture hw of h264cavlc is
 	-- information collected from input when ENABLE=1
 	-- all thse are in the "CLK2" timing domain
 	signal eenable : std_logic := '0';			--1 if ENABLE=1 seen
@@ -1310,4 +1310,5 @@ begin
 	end if;
 end process;
 	--
-end cavlc;
+end hw;
+

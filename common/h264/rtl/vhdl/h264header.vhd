@@ -143,7 +143,7 @@ entity h264header is
 	);
 end h264header;
 	
-architecture head1 of h264header is
+architecture hw of h264header is
 	--
 	signal slicehead1 : std_logic := '0';	-- if we need to emit slice header, part1
 	signal slicehead2 : std_logic := '0';	-- if we need to emit slice header, part2
@@ -375,4 +375,5 @@ begin
 	end if;
 end process;
 	--
-end head1;
+end hw;
+

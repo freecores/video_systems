@@ -68,7 +68,7 @@ entity h264coretransform is
 	);
 end h264coretransform;
 
-architecture transform of h264coretransform is
+architecture hw of h264coretransform is
 	--
 	alias xx0 : std_logic_vector(8 downto 0) is XXIN(8 downto 0);
 	alias xx1 : std_logic_vector(8 downto 0) is XXIN(17 downto 9);
@@ -259,8 +259,5 @@ begin
 	end if;
 end process;
 	--
-end transform;
-
-
-
+end hw;
 
