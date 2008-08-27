@@ -102,29 +102,34 @@ package h264 is
 	);
 	end component h264intra8x8cc;
 	--
-	component h264predp is
+	component h264interz is
+	generic (
+		MVB : integer := 2	--bits to encode MV
+	);
 	port (
 		CLK : in std_logic;					--pixel clock
 		--
 		-- in interface:
-		FIRST : in std_logic;				--indication this is the first on a line
+		NEWSLICE : in std_logic;			--indication this is the first in a slice
+		NEWLINE : in std_logic;				--indication this is the first on a line
 		STROBEI : in std_logic;				--data here
 		PREVI : in std_logic;				--1=previous frame, 0=new data to encode
 		DATAI : in std_logic_vector(31 downto 0);
 		READYI : out std_logic := '0';
 		--
 		-- top interface:
-		TOPV : in std_logic;						--set if TVEC* valid (not first)
-		TVECXI : in std_logic_vector(3 downto 0);	--top blocks prediction X vector
-		TVECYI : in std_logic_vector(3 downto 0);	--top blocks prediction Y vector
+		TVECXI : in std_logic_vector(MVB-1 downto 0) := (others=>'0');	--top block's X vector
+		TVECYI : in std_logic_vector(MVB-1 downto 0) := (others=>'0');	--top block's Y vector
+		SVECXI : in std_logic_vector(MVB-1 downto 0) := (others=>'0');	--suggested X vector
+		SVECYI : in std_logic_vector(MVB-1 downto 0) := (others=>'0');	--suggested Y vector
 		XXINC : out std_logic := '0';				--when to increment XX macroblock
 		--
 		-- out interface:
 		STROBEO : out std_logic := '0';				--data here
 		DATAO : out std_logic_vector(35 downto 0) := (others => '0');
 		READYO : in std_logic;
-		VECXO : out std_logic_vector(3 downto 0) := (others => '0');--vector X, signed
-		VECYO : out std_logic_vector(3 downto 0) := (others => '0')	--vector Y, signed
+		VECXO : out std_logic_vector(MVB-1 downto 0) := (others => '0');--vector X, signed
+		VECYO : out std_logic_vector(MVB-1 downto 0) := (others => '0')	--vector Y, signed
 	);
 	end component;
 	--
@@ -144,15 +149,14 @@ package h264 is
 		CLK : in std_logic;					--fast io clock
 		ENABLE : in std_logic;				--values input only when this is 1
 		WIN : in std_logic_vector(15 downto 0);	--input (reverse zigzag order)
-		LAST : out std_logic := '0';		--set when last coeff (C00) about to be input
 		VALID : out std_logic := '0';				--values output only when this is 1
-		XOUT : out std_logic_vector(35 downto 0)	--4 x 9bit, first px is lsbs
+		XOUT : out std_logic_vector(39 downto 0)	--4 x 10bit, first px is lsbs
 	);
 	end component;
 	--
 	component h264dctransform is
 	generic (	
-		TOGETHER : boolean := false			--true if output kept together as one block
+		TOGETHER : integer := 0				--1 if output kept together as one block
 	);
 	port (
 		CLK2 : in std_logic;				--fast io clock
@@ -187,7 +191,7 @@ package h264 is
 		CLK : in std_logic;					--pixel clock
 		ENABLE : in std_logic;				--values transfered only when this is 1
 		QP : in std_logic_vector(5 downto 0);	--0..51 as specified in standard
-		ZIN : in std_logic_vector(11 downto 0);
+		ZIN : in std_logic_vector(15 downto 0);
 		DCCI : in std_logic;					--2x2 DC chroma in
 		LAST : out std_logic := '0';			--set when last coeff about to be input
 		WOUT : out std_logic_vector(15 downto 0) := (others=>'0');
@@ -203,7 +207,7 @@ package h264 is
 		-- in interface:
 		NEWSLICE : in std_logic;			--reset
 		STROBEI : in std_logic;				--data here
-		DATAI : in std_logic_vector(35 downto 0);
+		DATAI : in std_logic_vector(39 downto 0);
 		BSTROBEI : in std_logic;				--base data here
 		BCHROMAI : in std_logic;				--chroma
 		BASEI : in std_logic_vector(31 downto 0);

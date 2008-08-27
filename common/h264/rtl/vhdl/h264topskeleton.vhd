@@ -105,6 +105,7 @@ entity h264topskeleton is
 end h264topskeleton;
 
 architecture hw of h264topskeleton is
+	--
 	signal intra4x4_TOPI : std_logic_vector(31 downto 0) := (others => '0');
 	signal intra4x4_TOPMI : std_logic_vector(3 downto 0) := (others => '0');
 	signal intra4x4_STROBEO : std_logic := '0';				--values transfered out when this is 1
@@ -153,7 +154,7 @@ architecture hw of h264topskeleton is
 	signal quantise_dcco : std_logic := '0';
 	--
 	signal dequantise_enable : std_logic := '0';
-	signal dequantise_zin : std_logic_vector(11 downto 0);
+	signal dequantise_zin : std_logic_vector(15 downto 0);
 	signal dequantise_last : std_logic := '0';
 	signal dequantise_valid : std_logic := '0';
 	signal dequantise_dcco : std_logic := '0';
@@ -165,11 +166,8 @@ architecture hw of h264topskeleton is
 	signal invdctransform_yyout : std_logic_vector(15 downto 0);
 	signal invdctransform_ready : std_logic := '0';
 	--
-	--signal invtransform_enable : std_logic := '0';
-	--signal invtransform_win : std_logic_vector(15 downto 0);
-	--signal invtransform_last : std_logic := '0';
 	signal invtransform_valid : std_logic := '0';
-	signal invtransform_xout : std_logic_vector(35 downto 0);
+	signal invtransform_xout : std_logic_vector(39 downto 0);
 	--
 	signal recon_BSTROBEI : std_logic := '0';				--values transfered only when this is 1
 	signal recon_basei : std_logic_vector(31 downto 0) := (others => '0');
@@ -183,7 +181,6 @@ architecture hw of h264topskeleton is
 	signal xbuffer_NV : std_logic_vector(1 downto 0);	--valid flags for NIN/NOUT (1=left, 2=top, 3=avg)
 	signal xbuffer_NXINC : std_logic := '0';		--increment for X macroblock counter
 	signal xbuffer_READYI : std_logic := '0';
-	--signal xbuffer_DCREADYI : std_logic := '0';
 	signal xbuffer_CCIN : std_logic := '0';
 	--
 	signal cavlc_ENABLE : std_logic := '0';				--values transfered only when this is 1
@@ -331,10 +328,10 @@ begin
 	recon_basei <= intra4x4_baseo when intra4x4_strobeo='1' else intra8x8cc_baseo;
 	--
 	dctransform : h264dctransform
-	generic map ( TOGETHER => true )
+	generic map ( TOGETHER => 1 )
 	port map (
 		CLK2 => clk2,
-		RESET => NEWslice,
+		RESET => newslice,
 		--READYI => 
 		ENABLE => intra8x8cc_dcstrobeo,
 		XXIN => intra8x8cc_dcdatao,
@@ -361,7 +358,7 @@ begin
 	invdctransform : h264dctransform
 	port map (
 		CLK2 => clk2,
-		RESET => NEWslice,
+		RESET => newslice,
 		--READYI => 
 		ENABLE => invdctransform_enable,
 		XXIN => invdctransform_zin,
@@ -387,19 +384,16 @@ begin
 		VALID => dequantise_valid
 	);
 	dequantise_enable <= quantise_valid and not quantise_dcco;
-	dequantise_zin <= quantise_zout when invdctransform_valid='0' else invdctransform_yyout(11 downto 0);	--WIDTH!!
+	dequantise_zin <= sxt(quantise_zout,16) when invdctransform_valid='0' else invdctransform_yyout;
 	--
 	invtransform : h264invtransform
 	port map (
 		CLK => clk2,
 		ENABLE => dequantise_valid,
 		WIN => dequantise_wout,
-		--LAST => invtransform_last,
 		VALID => invtransform_valid,
 		XOUT => invtransform_xout
 	);
-	--invtransform_enable <= dequantise_valid and not dequantise_dcco;
-	--invtransform_win <= dequantise_wout when invdctransform_valid='0' else invdctransform_yyout;
 	--
 	recon : h264recon
 	port map (
@@ -533,3 +527,4 @@ begin
 end process;
 	--
 end hw;
+
