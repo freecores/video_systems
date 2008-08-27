@@ -58,7 +58,7 @@ entity h264tobytes is
 	port (
 		CLK : in std_logic;					--pixel clock
 		VALID : in std_logic;				--data ready to be read
-		READY : out std_logic := '1';		--soft ready signal (can accept 16 more words when clear)
+		READY : out std_logic := '1';		--soft ready signal (can accept 40 more words when clear)
 		VE : in std_logic_vector(24 downto 0) := (others=>'0');
 		VL : in std_logic_vector(4 downto 0) := (others=>'0');
 		BYTE : out std_logic_vector(7 downto 0) := (others=>'0');
@@ -67,7 +67,7 @@ entity h264tobytes is
 	);
 end h264tobytes;
 
-architecture tobytes of h264tobytes is
+architecture hw of h264tobytes is
 	--
 	type Tave is array(63 downto 0) of std_logic_vector(24 downto 0);
 	type Tavl is array(63 downto 0) of std_logic_vector(4 downto 0);
@@ -104,7 +104,7 @@ begin
 				x"0";
 	--
 	adiff <= ain - aout;
-	ready <= not adiff(5);
+	ready <= '1' when adiff < 24 else '0';
 	pop <= '1' when ain/=aout and ptr<=4 and alignflg='0' else '0';
 	VE1 <= aVE(conv_integer(aout));
 	VL1 <= aVL(conv_integer(aout));
@@ -201,4 +201,5 @@ begin
 	end if;
 end process;
 	--
-end tobytes;
+end hw;
+
