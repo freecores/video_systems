@@ -44,7 +44,7 @@ use ieee.numeric_std.ALL;
 
 entity h264dctransform is
 	generic (	
-		TOGETHER : boolean := false			--true if output kept together as one block
+		TOGETHER : integer := 0				--1 if output kept together as one block
 	);
 	port (
 		CLK2 : in std_logic;				--fast clock
@@ -96,7 +96,7 @@ begin
 			end if;
 			ixx <= ixx+1;
 		end if;
-		if iout='1' and (READYO='1' or (TOGETHER and ixx/=0)) and RESET='0' then
+		if iout='1' and (READYO='1' or (TOGETHER=1 and ixx/=0)) and RESET='0' then
 			if ixx=0 then
 				YYOUT <= xx00 + xx10;	--out in raster scan order
 			elsif ixx=1 then
